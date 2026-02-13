@@ -2,37 +2,38 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Menu, Search, X } from 'lucide-react';
+import { Menu, Search, X, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-white via-amber-50/30 to-white backdrop-blur-md border-b border-amber-200/50 shadow-lg shadow-amber-100/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center gap-8">
-            <Link href="/" className="flex items-center">
-              <span className="text-2xl font-bold tracking-tight text-gray-900">
-                event<span className="text-green-600">IQ</span>
+            <Link href="/" className="flex items-center group">
+              <span className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900">
+                event<span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-amber-600 to-red-600">IQ</span>
               </span>
+              <Sparkles className="ml-2 h-5 w-5 text-amber-500 group-hover:rotate-12 transition-transform" />
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex space-x-8">
-              <Link href="#" className="text-gray-600 hover:text-green-600 font-medium transition-colors">
-                Find Talent
+            <nav className="hidden lg:flex space-x-8">
+              <Link href="#" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
+                Find Vendors
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
               </Link>
-              <Link href="#" className="text-gray-600 hover:text-green-600 font-medium transition-colors">
-                Find Work
+              <Link href="#" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
+                List Services
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
               </Link>
-              <Link href="#" className="text-gray-600 hover:text-green-600 font-medium transition-colors">
-                Why eventIQ
-              </Link>
-              <Link href="#" className="text-gray-600 hover:text-green-600 font-medium transition-colors">
-                Enterprise
+              <Link href="#" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
+                How It Works
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
               </Link>
             </nav>
           </div>
@@ -41,26 +42,26 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-4">
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                <Search className="h-5 w-5 text-amber-500 group-hover:text-orange-600 transition-colors" />
               </div>
               <input
                 type="text"
-                className="block w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-full leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:border-green-500 focus:ring-1 focus:ring-green-500 sm:text-sm transition-all duration-200"
-                placeholder="Search"
+                className="block w-64 pl-10 pr-3 py-2 border-2 border-amber-200 rounded-full leading-5 bg-white/80 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-300 sm:text-sm transition-all duration-200 hover:border-orange-300"
+                placeholder="Search events..."
               />
             </div>
-            
-            <Link 
-              href="/login" 
-              className="text-gray-700 hover:text-green-600 font-medium px-3 py-2 rounded-md transition-colors"
+
+            <Link
+              href="/login"
+              className="text-gray-700 hover:text-orange-600 font-medium px-4 py-2 rounded-full transition-all duration-200 hover:bg-orange-50"
             >
               Log In
             </Link>
-            <Link 
-              href="/signup" 
-              className="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-full transition-colors shadow-sm hover:shadow-md"
+            <Link
+              href="/signup"
+              className="bg-gradient-to-r from-orange-600 via-amber-600 to-red-600 hover:from-orange-700 hover:via-amber-700 hover:to-red-700 text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-200 shadow-lg shadow-orange-300/50 hover:shadow-xl hover:shadow-orange-400/60 hover:scale-105 transform"
             >
-              Sign Up
+              Get Started
             </Link>
           </div>
 
@@ -68,7 +69,7 @@ const Header = () => {
           <div className="flex items-center md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500"
+              className="inline-flex items-center justify-center p-2 rounded-lg text-gray-600 hover:text-orange-600 hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-orange-500 transition-colors"
             >
               <span className="sr-only">Open main menu</span>
               {isMenuOpen ? (
@@ -88,35 +89,32 @@ const Header = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-gray-200 bg-white"
+            className="md:hidden border-t border-amber-200 bg-gradient-to-b from-white to-amber-50/30 backdrop-blur-md"
           >
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              <Link href="#" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">
-                Find Talent
+              <Link href="#" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
+                Find Vendors
               </Link>
-              <Link href="#" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">
-                Find Work
+              <Link href="#" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
+                List Services
               </Link>
-              <Link href="#" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">
-                Why eventIQ
-              </Link>
-              <Link href="#" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">
-                Enterprise
+              <Link href="#" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
+                How It Works
               </Link>
             </div>
-            <div className="pt-4 pb-4 border-t border-gray-200">
-              <div className="px-5 space-y-4">
-                <Link 
-                  href="/login" 
-                  className="block text-center w-full px-4 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-green-600 bg-white hover:bg-gray-50 border-green-600"
+            <div className="pt-4 pb-4 border-t border-amber-200">
+              <div className="px-5 space-y-3">
+                <Link
+                  href="/login"
+                  className="block text-center w-full px-4 py-3 border-2 border-orange-500 rounded-full shadow-sm text-base font-medium text-orange-600 bg-white hover:bg-orange-50 transition-colors"
                 >
                   Log In
                 </Link>
-                <Link 
-                  href="/signup" 
-                  className="block text-center w-full px-4 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700"
+                <Link
+                  href="/signup"
+                  className="block text-center w-full px-4 py-3 border border-transparent rounded-full shadow-lg text-base font-semibold text-white bg-gradient-to-r from-orange-600 via-amber-600 to-red-600 hover:from-orange-700 hover:via-amber-700 hover:to-red-700 transition-all"
                 >
-                  Sign Up
+                  Get Started
                 </Link>
               </div>
             </div>
