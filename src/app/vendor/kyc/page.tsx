@@ -22,6 +22,7 @@ const VendorKYC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
+  const [uploadedDocs, setUploadedDocs] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     businessName: '',
     category: '',
@@ -29,23 +30,18 @@ const VendorKYC = () => {
     phone: '',
     country: '',
     city: '',
-    servicesOffered: [] as string[],
-    priceRange: '',
   });
 
   const categories = [
-    'Catering',
-    'Photography',
-    'Videography',
-    'Decoration',
-    'Entertainment',
-    'Venue',
-    'Sound & Lighting',
-    'MC/Hosting',
-    'Security',
-    'Transportation',
-    'Makeup & Beauty',
-    'Other',
+    { value: 'catering', label: 'Catering' },
+    { value: 'photography', label: 'Photography' },
+    { value: 'audio_visual', label: 'Audio & Visual' },
+    { value: 'decor_styling', label: 'Decor & Styling' },
+    { value: 'entertainment', label: 'Entertainment' },
+    { value: 'venue_sourcing', label: 'Venue Sourcing' },
+    { value: 'event_planning', label: 'Event Planning' },
+    { value: 'security', label: 'Security' },
+    { value: 'other', label: 'Other' },
   ];
 
   const countries = [
@@ -60,27 +56,17 @@ const VendorKYC = () => {
     'Other',
   ];
 
-  const priceRanges = [
-    'Budget (< $100)',
-    'Standard ($100 - $500)',
-    'Premium ($500 - $1,500)',
-    'Luxury (> $1,500)',
+  const requiredDocuments = [
+    'Business Registration Certificate',
+    'Tax Compliance Certificate',
+    'Professional License/Certification',
   ];
 
-  const handleAddService = (service: string) => {
-    if (!formData.servicesOffered.includes(service)) {
-      setFormData({
-        ...formData,
-        servicesOffered: [...formData.servicesOffered, service],
-      });
+  const handleFileSimulation = (docName: string) => {
+    // Simulate file upload
+    if (!uploadedDocs.includes(docName)) {
+      setUploadedDocs([...uploadedDocs, docName]);
     }
-  };
-
-  const handleRemoveService = (service: string) => {
-    setFormData({
-      ...formData,
-      servicesOffered: formData.servicesOffered.filter((s) => s !== service),
-    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -140,7 +126,6 @@ const VendorKYC = () => {
         .single();
 
       if (vendorCheckError && vendorCheckError.code !== 'PGRST116') {
-        // PGRST116 is "not found" error, which is fine
         console.error('Vendor check error:', {
           message: vendorCheckError.message,
           details: vendorCheckError.details,
@@ -160,8 +145,6 @@ const VendorKYC = () => {
         country: formData.country,
         city: formData.city,
         location: `${formData.city}, ${formData.country}`,
-        services_offered: formData.servicesOffered,
-        price_range: formData.priceRange,
       };
 
       let vendorError;
@@ -209,12 +192,7 @@ const VendorKYC = () => {
 
   const nextStep = () => {
     if (currentStep === 1) {
-      if (!formData.businessName || !formData.category || !formData.description) {
-        setError('Please fill in all required fields');
-        return;
-      }
-    } else if (currentStep === 2) {
-      if (!formData.phone || !formData.country || !formData.city) {
+      if (!formData.businessName || !formData.category || !formData.description || !formData.phone || !formData.country || !formData.city) {
         setError('Please fill in all required fields');
         return;
       }
@@ -233,9 +211,9 @@ const VendorKYC = () => {
       <div className="max-w-3xl mx-auto">
         {/* Progress Steps */}
         <div className="mb-12">
-          <div className="flex items-center justify-between">
-            {[1, 2, 3].map((step) => (
-              <div key={step} className="flex items-center flex-1">
+          <div className="flex items-center justify-center gap-8">
+            {[1, 2].map((step) => (
+              <React.Fragment key={step}>
                 <div className="flex flex-col items-center">
                   <div
                     className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${
@@ -251,19 +229,18 @@ const VendorKYC = () => {
                     )}
                   </div>
                   <span className="mt-2 text-sm font-medium text-gray-600">
-                    {step === 1 && 'Business Info'}
-                    {step === 2 && 'Contact & Location'}
-                    {step === 3 && 'Services & Pricing'}
+                    {step === 1 && 'Business Information'}
+                    {step === 2 && 'Document Upload'}
                   </span>
                 </div>
-                {step < 3 && (
+                {step < 2 && (
                   <div
-                    className={`flex-1 h-1 mx-4 transition-all ${
+                    className={`w-32 h-1 transition-all ${
                       currentStep > step ? 'bg-orange-500' : 'bg-gray-200'
                     }`}
                   />
                 )}
-              </div>
+              </React.Fragment>
             ))}
           </div>
         </div>
@@ -338,8 +315,8 @@ const VendorKYC = () => {
                     >
                       <option value="">Select a category</option>
                       {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
+                        <option key={cat.value} value={cat.value}>
+                          {cat.label}
                         </option>
                       ))}
                     </select>
@@ -361,16 +338,7 @@ const VendorKYC = () => {
                     placeholder="Tell us about your business, experience, and what makes you unique..."
                   />
                 </div>
-              </motion.div>
-            )}
 
-            {/* Step 2: Contact & Location */}
-            {currentStep === 2 && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="space-y-6"
-              >
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Phone Number *
@@ -392,125 +360,113 @@ const VendorKYC = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Country *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Globe className="h-5 w-5 text-gray-400" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Country *
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Globe className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <select
+                        required
+                        value={formData.country}
+                        onChange={(e) =>
+                          setFormData({ ...formData, country: e.target.value })
+                        }
+                        className="block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-200 transition-all"
+                      >
+                        <option value="">Select country</option>
+                        {countries.map((country) => (
+                          <option key={country} value={country}>
+                            {country}
+                          </option>
+                        ))}
+                      </select>
                     </div>
-                    <select
-                      required
-                      value={formData.country}
-                      onChange={(e) =>
-                        setFormData({ ...formData, country: e.target.value })
-                      }
-                      className="block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-200 transition-all"
-                    >
-                      <option value="">Select your country</option>
-                      {countries.map((country) => (
-                        <option key={country} value={country}>
-                          {country}
-                        </option>
-                      ))}
-                    </select>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    City *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <MapPin className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      City *
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <MapPin className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        value={formData.city}
+                        onChange={(e) =>
+                          setFormData({ ...formData, city: e.target.value })
+                        }
+                        className="block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-200 transition-all"
+                        placeholder="e.g., Nairobi"
+                      />
                     </div>
-                    <input
-                      type="text"
-                      required
-                      value={formData.city}
-                      onChange={(e) =>
-                        setFormData({ ...formData, city: e.target.value })
-                      }
-                      className="block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-200 transition-all"
-                      placeholder="e.g., Nairobi"
-                    />
                   </div>
                 </div>
               </motion.div>
             )}
 
-            {/* Step 3: Services & Pricing */}
-            {currentStep === 3 && (
+            {/* Step 2: Document Upload (Simulation) */}
+            {currentStep === 2 && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="space-y-6"
               >
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Services Offered
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      'Full Service Catering',
-                      'Event Photography',
-                      'Video Production',
-                      'Stage Design',
-                      'Sound System',
-                      'Lighting',
-                      'DJ Services',
-                      'Live Band',
-                      'MC Services',
-                      'Event Planning',
-                      'Security',
-                      'Transportation',
-                    ].map((service) => (
-                      <button
-                        key={service}
-                        type="button"
-                        onClick={() =>
-                          formData.servicesOffered.includes(service)
-                            ? handleRemoveService(service)
-                            : handleAddService(service)
-                        }
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                          formData.servicesOffered.includes(service)
-                            ? 'bg-orange-500 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        {service}
-                      </button>
-                    ))}
-                  </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                  <p className="text-sm text-blue-800">
+                    <strong>Demo Mode:</strong> This is a simulation. Click the upload buttons to simulate document upload. No actual files will be uploaded.
+                  </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Price Range
-                  </label>
-                  <select
-                    value={formData.priceRange}
-                    onChange={(e) =>
-                      setFormData({ ...formData, priceRange: e.target.value })
-                    }
-                    className="block w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-200 transition-all"
-                  >
-                    <option value="">Select your typical price range</option>
-                    {priceRanges.map((range) => (
-                      <option key={range} value={range}>
-                        {range}
-                      </option>
-                    ))}
-                  </select>
+                <div className="space-y-4">
+                  {requiredDocuments.map((docName) => (
+                    <div key={docName} className="border-2 border-gray-200 rounded-xl p-4 hover:border-orange-300 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            uploadedDocs.includes(docName)
+                              ? 'bg-green-100'
+                              : 'bg-gray-100'
+                          }`}>
+                            {uploadedDocs.includes(docName) ? (
+                              <CheckCircle className="h-6 w-6 text-green-600" />
+                            ) : (
+                              <Upload className="h-6 w-6 text-gray-400" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">{docName}</p>
+                            <p className="text-sm text-gray-500">
+                              {uploadedDocs.includes(docName) ? 'Uploaded ✓' : 'Required'}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleFileSimulation(docName)}
+                          disabled={uploadedDocs.includes(docName)}
+                          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                            uploadedDocs.includes(docName)
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:shadow-lg'
+                          }`}
+                        >
+                          {uploadedDocs.includes(docName) ? 'Uploaded' : 'Upload'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6">
                   <p className="text-sm text-amber-800">
-                    <strong>Note:</strong> You'll be able to add portfolio images and more details
-                    from your dashboard after completing this setup.
+                    <strong>Note:</strong> Upload all required documents to complete your KYC verification. Your profile will be reviewed within 24-48 hours.
                   </p>
                 </div>
               </motion.div>
@@ -528,7 +484,7 @@ const VendorKYC = () => {
                 </button>
               )}
 
-              {currentStep < 3 ? (
+              {currentStep < 2 ? (
                 <button
                   type="button"
                   onClick={nextStep}
@@ -540,13 +496,17 @@ const VendorKYC = () => {
               ) : (
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || uploadedDocs.length < requiredDocuments.length}
                   className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-600 via-amber-600 to-red-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>
                       <Loader2 className="h-5 w-5 animate-spin" />
-                      Completing...
+                      Submitting...
+                    </>
+                  ) : uploadedDocs.length < requiredDocuments.length ? (
+                    <>
+                      Upload All Documents First
                     </>
                   ) : (
                     <>

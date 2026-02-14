@@ -6,6 +6,7 @@ import Hero from "@/components/Hero";
 import Categories from "@/components/Categories";
 import Features from "@/components/Features";
 import { getCurrentProfile, signOut } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Briefcase, LogOut, Settings, User, CheckCircle, X } from 'lucide-react';
 
@@ -25,7 +26,19 @@ export default function Home() {
   const [welcomeType, setWelcomeType] = useState<'organizer' | 'vendor' | null>(null);
 
   useEffect(() => {
+    // Check auth on mount
     checkAuth();
+    
+    // Listen for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          await checkAuth();
+        } else if (event === 'SIGNED_OUT') {
+          setProfile(null);
+        }
+      }
+    );
     
     // Check for welcome messages
     const welcome = searchParams.get('welcome');
@@ -44,6 +57,11 @@ export default function Home() {
       setShowWelcome(true);
       setTimeout(() => setShowWelcome(false), 4000);
     }
+
+    // Cleanup listener on unmount
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
   }, [searchParams]);
 
   const checkAuth = async () => {
@@ -52,6 +70,7 @@ export default function Home() {
       setProfile(userProfile);
     } catch (error) {
       console.error('Error fetching profile:', error);
+      setProfile(null);
     } finally {
       setLoading(false);
     }

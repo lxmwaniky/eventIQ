@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Menu, Search, X, Sparkles, User, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCurrentProfile, signOut } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
 interface Profile {
@@ -21,7 +22,27 @@ const Header = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check auth on mount
     checkAuth();
+
+    // Listen for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event);
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          // User signed in, fetch their profile
+          await checkAuth();
+        } else if (event === 'SIGNED_OUT') {
+          // User signed out, clear profile
+          setProfile(null);
+        }
+      }
+    );
+
+    // Cleanup listener on unmount
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
   }, []);
 
   const checkAuth = async () => {
@@ -30,6 +51,7 @@ const Header = () => {
       setProfile(userProfile);
     } catch (error) {
       console.error('Error fetching profile:', error);
+      setProfile(null);
     } finally {
       setLoading(false);
     }
