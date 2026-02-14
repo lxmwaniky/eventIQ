@@ -81,18 +81,59 @@ const Header = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex space-x-8">
-              <Link href="#" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
-                Find Vendors
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
-              </Link>
-              <Link href="#" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
-                List Services
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
-              </Link>
-              <Link href="#" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
-                How It Works
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
-              </Link>
+              {profile && (profile.user_type === 'vendor' || profile.user_type === 'both') ? (
+                // Vendor Navigation
+                <>
+                  <Link href="/vendor/jobs" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
+                    Available Jobs
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
+                  </Link>
+                  <Link href="/my-proposals" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
+                    My Proposals
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
+                  </Link>
+                  <Link href="/vendor/kyc" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
+                    KYC Status
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
+                  </Link>
+                  <Link href="/my-gigs" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
+                    My Gigs
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
+                  </Link>
+                </>
+              ) : profile && profile.user_type === 'organizer' ? (
+                // Organizer Navigation
+                <>
+                  <Link href="/create-gig" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
+                    Create Gig
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
+                  </Link>
+                  <Link href="/my-gigs" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
+                    My Gigs
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
+                  </Link>
+                  <Link href="#" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
+                    How It Works
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
+                  </Link>
+                </>
+              ) : (
+                // Guest Navigation
+                <>
+                  <Link href="#" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
+                    Find Vendors
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
+                  </Link>
+                  <Link href="#" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
+                    List Services
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
+                  </Link>
+                  <Link href="#" className="relative text-gray-700 hover:text-orange-600 font-medium transition-colors group">
+                    How It Works
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-600 group-hover:w-full transition-all duration-300"></span>
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
 
@@ -179,15 +220,49 @@ const Header = () => {
             className="md:hidden border-t border-amber-200 bg-gradient-to-b from-white to-amber-50/30 backdrop-blur-md"
           >
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              <Link href="#" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
-                Find Vendors
-              </Link>
-              <Link href="#" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
-                List Services
-              </Link>
-              <Link href="#" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
-                How It Works
-              </Link>
+              {profile && (profile.user_type === 'vendor' || profile.user_type === 'both') ? (
+                // Vendor Mobile Navigation
+                <>
+                  <Link href="/vendor/jobs" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
+                    Available Jobs
+                  </Link>
+                  <Link href="/my-proposals" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
+                    My Proposals
+                  </Link>
+                  <Link href="/vendor/kyc" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
+                    KYC Status
+                  </Link>
+                  <Link href="/my-gigs" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
+                    My Gigs
+                  </Link>
+                </>
+              ) : profile && profile.user_type === 'organizer' ? (
+                // Organizer Mobile Navigation
+                <>
+                  <Link href="/create-gig" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
+                    Create Gig
+                  </Link>
+                  <Link href="/my-gigs" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
+                    My Gigs
+                  </Link>
+                  <Link href="#" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
+                    How It Works
+                  </Link>
+                </>
+              ) : (
+                // Guest Mobile Navigation
+                <>
+                  <Link href="#" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
+                    Find Vendors
+                  </Link>
+                  <Link href="#" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
+                    List Services
+                  </Link>
+                  <Link href="#" className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors">
+                    How It Works
+                  </Link>
+                </>
+              )}
             </div>
             <div className="pt-4 pb-4 border-t border-amber-200">
               <div className="px-5 space-y-3">
