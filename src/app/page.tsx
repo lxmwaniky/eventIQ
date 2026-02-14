@@ -45,6 +45,7 @@ export default function Home() {
     const login = searchParams.get('login');
     const kycComplete = searchParams.get('kyc_complete');
     const gigCreated = searchParams.get('gig_created');
+    const proposalSubmitted = searchParams.get('proposal_submitted');
     
     if (welcome) {
       setWelcomeType(welcome as 'organizer' | 'vendor');
@@ -58,6 +59,9 @@ export default function Home() {
       setShowWelcome(true);
       setTimeout(() => setShowWelcome(false), 4000);
     } else if (gigCreated) {
+      setShowWelcome(true);
+      setTimeout(() => setShowWelcome(false), 4000);
+    } else if (proposalSubmitted) {
       setShowWelcome(true);
       setTimeout(() => setShowWelcome(false), 4000);
     }
@@ -121,6 +125,7 @@ export default function Home() {
                     {welcomeType === 'organizer' ? 'Welcome, Organizer!' : 
                      welcomeType === 'vendor' ? 'Welcome back!' : 
                      searchParams.get('gig_created') ? 'Gig Posted Successfully!' :
+                     searchParams.get('proposal_submitted') ? 'Proposal Submitted!' :
                      'Profile Complete!'}
                   </h4>
                   <p className="text-sm text-gray-600">
@@ -130,6 +135,8 @@ export default function Home() {
                       ? 'Good to see you again!'
                       : searchParams.get('gig_created')
                       ? 'Your gig is now live and visible to all vendors!'
+                      : searchParams.get('proposal_submitted')
+                      ? 'Your proposal has been sent to the organizer!'
                       : 'Your vendor profile is now complete!'}
                   </p>
                 </div>
@@ -265,7 +272,7 @@ export default function Home() {
               className="mt-8 bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-orange-100 p-8"
             >
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                {profile.user_type === 'vendor' ? 'Available Jobs' : 'Your Events'}
+                {profile.user_type === 'vendor' ? 'Available Jobs' : 'Your Gigs'}
               </h2>
               <div className="text-center py-12">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
@@ -278,19 +285,37 @@ export default function Home() {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   {profile.user_type === 'vendor' 
                     ? 'Ready to find jobs?'
-                    : 'No events yet'}
+                    : 'Manage your gigs'}
                 </h3>
                 <p className="text-gray-600 mb-6">
                   {profile.user_type === 'vendor'
                     ? 'Browse available jobs and submit proposals to start earning.'
-                    : 'Create your first event and start finding the perfect vendors.'}
+                    : 'View your posted gigs, see applicants, and manage proposals.'}
                 </p>
-                <button 
-                  onClick={() => router.push(profile.user_type === 'vendor' ? '/vendor/jobs' : '/create-gig')}
-                  className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
-                >
-                  {profile.user_type === 'vendor' ? 'Browse Jobs' : 'Create Gig'}
-                </button>
+                <div className="flex gap-3 justify-center">
+                  <button 
+                    onClick={() => router.push(profile.user_type === 'vendor' ? '/vendor/jobs' : '/my-gigs')}
+                    className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+                  >
+                    {profile.user_type === 'vendor' ? 'Browse Jobs' : 'My Gigs'}
+                  </button>
+                  {profile.user_type === 'organizer' && (
+                    <button 
+                      onClick={() => router.push('/create-gig')}
+                      className="px-6 py-3 border-2 border-orange-600 text-orange-600 font-semibold rounded-xl hover:bg-orange-50 transition-all"
+                    >
+                      Post New Gig
+                    </button>
+                  )}
+                  {profile.user_type === 'vendor' && (
+                    <button 
+                      onClick={() => router.push('/my-proposals')}
+                      className="px-6 py-3 border-2 border-orange-600 text-orange-600 font-semibold rounded-xl hover:bg-orange-50 transition-all"
+                    >
+                      My Proposals
+                    </button>
+                  )}
+                </div>
               </div>
             </motion.div>
           </div>

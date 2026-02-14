@@ -331,7 +331,7 @@ const VendorJobs = () => {
                 </div>
 
                 <button
-                  onClick={() => router.push(`/vendor/jobs/${job.id}`)}
+                  onClick={() => router.push(`/job/${job.id}/apply`)}
                   className="ml-4 px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-500/50 transition-all flex items-center gap-2 whitespace-nowrap"
                 >
                   Submit Proposal
