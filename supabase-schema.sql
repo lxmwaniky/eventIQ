@@ -187,7 +187,8 @@ CREATE POLICY "Users can view own profile"
 CREATE POLICY "Users can update own profile"
     ON public.profiles
     FOR UPDATE
-    USING (auth.uid() = user_id);
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
 
 -- Allow public to read basic profile info (for displaying vendor/organizer info)
 CREATE POLICY "Public can view basic profiles"
@@ -222,6 +223,13 @@ CREATE POLICY "Vendors can update own data"
     ON public.vendors
     FOR UPDATE
     USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE profiles.id = vendors.profile_id
+            AND profiles.user_id = auth.uid()
+        )
+    )
+    WITH CHECK (
         EXISTS (
             SELECT 1 FROM public.profiles
             WHERE profiles.id = vendors.profile_id
@@ -268,6 +276,13 @@ CREATE POLICY "Organizers can update own data"
     ON public.organizers
     FOR UPDATE
     USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE profiles.id = organizers.profile_id
+            AND profiles.user_id = auth.uid()
+        )
+    )
+    WITH CHECK (
         EXISTS (
             SELECT 1 FROM public.profiles
             WHERE profiles.id = organizers.profile_id
