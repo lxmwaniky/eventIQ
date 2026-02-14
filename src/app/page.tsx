@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Hero from "@/components/Hero";
 import Categories from "@/components/Categories";
 import Features from "@/components/Features";
@@ -17,9 +17,8 @@ interface Profile {
   user_type: 'vendor' | 'organizer' | 'both';
 }
 
-function HomeContent() {
+export default function Home() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
@@ -40,37 +39,34 @@ function HomeContent() {
       }
     );
     
-    // Check for welcome messages
-    const welcome = searchParams.get('welcome');
-    const login = searchParams.get('login');
-    const kycComplete = searchParams.get('kyc_complete');
-    const gigCreated = searchParams.get('gig_created');
-    const proposalSubmitted = searchParams.get('proposal_submitted');
-    
-    if (welcome) {
-      setWelcomeType(welcome as 'organizer' | 'vendor');
-      setShowWelcome(true);
-      setTimeout(() => setShowWelcome(false), 5000);
-    } else if (login) {
-      setWelcomeType(login as 'organizer' | 'vendor');
-      setShowWelcome(true);
-      setTimeout(() => setShowWelcome(false), 4000);
-    } else if (kycComplete) {
-      setShowWelcome(true);
-      setTimeout(() => setShowWelcome(false), 4000);
-    } else if (gigCreated) {
-      setShowWelcome(true);
-      setTimeout(() => setShowWelcome(false), 4000);
-    } else if (proposalSubmitted) {
-      setShowWelcome(true);
-      setTimeout(() => setShowWelcome(false), 4000);
+    // Check for welcome messages from URL
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const welcome = params.get('welcome');
+      const login = params.get('login');
+      const kycComplete = params.get('kyc_complete');
+      const gigCreated = params.get('gig_created');
+      const proposalSubmitted = params.get('proposal_submitted');
+      
+      if (welcome) {
+        setWelcomeType(welcome as 'organizer' | 'vendor');
+        setShowWelcome(true);
+        setTimeout(() => setShowWelcome(false), 5000);
+      } else if (login) {
+        setWelcomeType(login as 'organizer' | 'vendor');
+        setShowWelcome(true);
+        setTimeout(() => setShowWelcome(false), 4000);
+      } else if (kycComplete || gigCreated || proposalSubmitted) {
+        setShowWelcome(true);
+        setTimeout(() => setShowWelcome(false), 4000);
+      }
     }
 
     // Cleanup listener on unmount
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, [searchParams]);
+  }, []);
 
   const checkAuth = async () => {
     try {
@@ -124,8 +120,8 @@ function HomeContent() {
                   <h4 className="font-bold text-gray-900">
                     {welcomeType === 'organizer' ? 'Welcome, Organizer!' : 
                      welcomeType === 'vendor' ? 'Welcome back!' : 
-                     searchParams.get('gig_created') ? 'Gig Posted Successfully!' :
-                     searchParams.get('proposal_submitted') ? 'Proposal Submitted!' :
+                     typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('gig_created') ? 'Gig Posted Successfully!' :
+                     typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('proposal_submitted') ? 'Proposal Submitted!' :
                      'Profile Complete!'}
                   </h4>
                   <p className="text-sm text-gray-600">
@@ -133,9 +129,9 @@ function HomeContent() {
                       ? 'Your account is ready. Start finding vendors for your events!'
                       : welcomeType === 'vendor'
                       ? 'Good to see you again!'
-                      : searchParams.get('gig_created')
+                      : typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('gig_created')
                       ? 'Your gig is now live and visible to all vendors!'
-                      : searchParams.get('proposal_submitted')
+                      : typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('proposal_submitted')
                       ? 'Your proposal has been sent to the organizer!'
                       : 'Your vendor profile is now complete!'}
                   </p>
@@ -331,20 +327,5 @@ function HomeContent() {
       <Categories />
       <Features />
     </>
-  );
-}
-
-export default function Home() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    }>
-      <HomeContent />
-    </Suspense>
   );
 }
