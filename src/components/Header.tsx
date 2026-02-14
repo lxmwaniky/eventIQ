@@ -1,12 +1,48 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, Search, X, Sparkles } from 'lucide-react';
+import { Menu, Search, X, Sparkles, User, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getCurrentProfile, signOut } from '@/lib/auth';
+import { useRouter } from 'next/navigation';
+
+interface Profile {
+  id: string;
+  full_name: string;
+  email: string;
+  user_type: 'vendor' | 'organizer' | 'both';
+}
 
 const Header = () => {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const userProfile = await getCurrentProfile();
+      setProfile(userProfile);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    const result = await signOut();
+    if (result.success) {
+      setProfile(null);
+      router.push('/');
+      router.refresh();
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-white via-amber-50/30 to-white backdrop-blur-md border-b border-amber-200/50 shadow-lg shadow-amber-100/20">
@@ -51,18 +87,47 @@ const Header = () => {
               />
             </div>
 
-            <Link
-              href="/login"
-              className="text-gray-700 hover:text-orange-600 font-medium px-4 py-2 rounded-full transition-all duration-200 hover:bg-orange-50"
-            >
-              Log In
-            </Link>
-            <Link
-              href="/signup"
-              className="bg-gradient-to-r from-orange-600 via-amber-600 to-red-600 hover:from-orange-700 hover:via-amber-700 hover:to-red-700 text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-200 shadow-lg shadow-orange-300/50 hover:shadow-xl hover:shadow-orange-400/60 hover:scale-105 transform"
-            >
-              Get Started
-            </Link>
+            {!loading && (
+              <>
+                {profile ? (
+                  /* Authenticated User Menu */
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href="/"
+                      className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-orange-50 transition-all"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-600 to-amber-600 flex items-center justify-center">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                      <span className="text-gray-700 font-medium">{profile.full_name}</span>
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="px-4 py-2 text-gray-700 hover:text-orange-600 font-medium rounded-full transition-all hover:bg-orange-50 flex items-center gap-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  /* Guest User Buttons */
+                  <>
+                    <Link
+                      href="/login"
+                      className="text-gray-700 hover:text-orange-600 font-medium px-4 py-2 rounded-full transition-all duration-200 hover:bg-orange-50"
+                    >
+                      Log In
+                    </Link>
+                    <Link
+                      href="/signup"
+                      className="bg-gradient-to-r from-orange-600 via-amber-600 to-red-600 hover:from-orange-700 hover:via-amber-700 hover:to-red-700 text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-200 shadow-lg shadow-orange-300/50 hover:shadow-xl hover:shadow-orange-400/60 hover:scale-105 transform"
+                    >
+                      Get Started
+                    </Link>
+                  </>
+                )}
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -104,18 +169,45 @@ const Header = () => {
             </div>
             <div className="pt-4 pb-4 border-t border-amber-200">
               <div className="px-5 space-y-3">
-                <Link
-                  href="/login"
-                  className="block text-center w-full px-4 py-3 border-2 border-orange-500 rounded-full shadow-sm text-base font-medium text-orange-600 bg-white hover:bg-orange-50 transition-colors"
-                >
-                  Log In
-                </Link>
-                <Link
-                  href="/signup"
-                  className="block text-center w-full px-4 py-3 border border-transparent rounded-full shadow-lg text-base font-semibold text-white bg-gradient-to-r from-orange-600 via-amber-600 to-red-600 hover:from-orange-700 hover:via-amber-700 hover:to-red-700 transition-all"
-                >
-                  Get Started
-                </Link>
+                {profile ? (
+                  /* Authenticated Mobile Menu */
+                  <>
+                    <Link
+                      href="/"
+                      className="block text-center w-full px-4 py-3 border-2 border-orange-500 rounded-full shadow-sm text-base font-medium text-orange-600 bg-white hover:bg-orange-50 transition-colors"
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <User className="h-5 w-5" />
+                        {profile.full_name}
+                      </div>
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block text-center w-full px-4 py-3 border border-transparent rounded-full shadow-lg text-base font-semibold text-white bg-gradient-to-r from-orange-600 via-amber-600 to-red-600 hover:from-orange-700 hover:via-amber-700 hover:to-red-700 transition-all"
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <LogOut className="h-5 w-5" />
+                        Logout
+                      </div>
+                    </button>
+                  </>
+                ) : (
+                  /* Guest Mobile Menu */
+                  <>
+                    <Link
+                      href="/login"
+                      className="block text-center w-full px-4 py-3 border-2 border-orange-500 rounded-full shadow-sm text-base font-medium text-orange-600 bg-white hover:bg-orange-50 transition-colors"
+                    >
+                      Log In
+                    </Link>
+                    <Link
+                      href="/signup"
+                      className="block text-center w-full px-4 py-3 border border-transparent rounded-full shadow-lg text-base font-semibold text-white bg-gradient-to-r from-orange-600 via-amber-600 to-red-600 hover:from-orange-700 hover:via-amber-700 hover:to-red-700 transition-all"
+                    >
+                      Get Started
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
