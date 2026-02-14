@@ -16,9 +16,10 @@ import {
   Search
 } from 'lucide-react';
 import { getCurrentProfile } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 
 interface Job {
-  id: number;
+  id: string | number;
   title: string;
   description: string;
   budget: string;
@@ -29,6 +30,7 @@ interface Job {
   duration: string;
   postedAgo: string;
   proposals: number;
+  isRealJob?: boolean; // To distinguish real jobs from demo jobs
 }
 
 const VendorJobs = () => {
@@ -36,6 +38,7 @@ const VendorJobs = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [realJobs, setRealJobs] = useState<Job[]>([]);
 
   const categories = [
     'all',
@@ -130,13 +133,82 @@ const VendorJobs = () => {
     },
   ];
 
+  // Combine real jobs (at the top) with demo jobs
+  const allJobs = [...realJobs, ...availableJobs];
+  
   const filteredJobs = selectedCategory === 'all' 
-    ? availableJobs 
-    : availableJobs.filter(job => job.category === selectedCategory);
+    ? allJobs 
+    : allJobs.filter(job => job.category === selectedCategory);
 
   useEffect(() => {
     checkAuth();
+    fetchRealJobs();
   }, []);
+
+  const fetchRealJobs = async () => {
+    try {
+      const { data: jobs, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .eq('status', 'open')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching jobs:', error);
+        return;
+      }
+
+      if (jobs) {
+        // Transform database jobs to match our Job interface
+        const transformedJobs: Job[] = jobs.map((job) => {
+          const budgetRange = job.budget_min && job.budget_max 
+            ? `$${job.budget_min.toLocaleString()} - $${job.budget_max.toLocaleString()}`
+            : job.budget_min 
+            ? `From $${job.budget_min.toLocaleString()}`
+            : 'Budget TBD';
+          
+          const eventDate = job.event_date 
+            ? new Date(job.event_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+            : 'Date TBD';
+          
+          const createdAt = new Date(job.created_at);
+          const now = new Date();
+          const diffMs = now.getTime() - createdAt.getTime();
+          const diffMins = Math.floor(diffMs / 60000);
+          const diffHours = Math.floor(diffMs / 3600000);
+          const diffDays = Math.floor(diffMs / 86400000);
+          
+          let postedAgo = '';
+          if (diffMins < 60) {
+            postedAgo = `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+          } else if (diffHours < 24) {
+            postedAgo = `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+          } else {
+            postedAgo = `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+          }
+
+          return {
+            id: job.id,
+            title: job.title,
+            description: job.description,
+            budget: budgetRange,
+            location: job.location,
+            date: eventDate,
+            category: job.category,
+            attendees: job.attendees ? `${job.attendees} people` : 'TBD',
+            duration: job.duration || 'TBD',
+            postedAgo: postedAgo,
+            proposals: job.proposals_count || 0,
+            isRealJob: true,
+          };
+        });
+        
+        setRealJobs(transformedJobs);
+      }
+    } catch (error) {
+      console.error('Error in fetchRealJobs:', error);
+    }
+  };
 
   const checkAuth = async () => {
     try {
@@ -250,6 +322,11 @@ const VendorJobs = () => {
                     <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
                       {job.category.replace('_', ' ')}
                     </span>
+                    {job.isRealJob && (
+                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                        NEW
+                      </span>
+                    )}
                   </div>
                 </div>
 

@@ -44,6 +44,7 @@ export default function Home() {
     const welcome = searchParams.get('welcome');
     const login = searchParams.get('login');
     const kycComplete = searchParams.get('kyc_complete');
+    const gigCreated = searchParams.get('gig_created');
     
     if (welcome) {
       setWelcomeType(welcome as 'organizer' | 'vendor');
@@ -54,6 +55,9 @@ export default function Home() {
       setShowWelcome(true);
       setTimeout(() => setShowWelcome(false), 4000);
     } else if (kycComplete) {
+      setShowWelcome(true);
+      setTimeout(() => setShowWelcome(false), 4000);
+    } else if (gigCreated) {
       setShowWelcome(true);
       setTimeout(() => setShowWelcome(false), 4000);
     }
@@ -116,6 +120,7 @@ export default function Home() {
                   <h4 className="font-bold text-gray-900">
                     {welcomeType === 'organizer' ? 'Welcome, Organizer!' : 
                      welcomeType === 'vendor' ? 'Welcome back!' : 
+                     searchParams.get('gig_created') ? 'Gig Posted Successfully!' :
                      'Profile Complete!'}
                   </h4>
                   <p className="text-sm text-gray-600">
@@ -123,6 +128,8 @@ export default function Home() {
                       ? 'Your account is ready. Start finding vendors for your events!'
                       : welcomeType === 'vendor'
                       ? 'Good to see you again!'
+                      : searchParams.get('gig_created')
+                      ? 'Your gig is now live and visible to all vendors!'
                       : 'Your vendor profile is now complete!'}
                   </p>
                 </div>
@@ -279,10 +286,10 @@ export default function Home() {
                     : 'Create your first event and start finding the perfect vendors.'}
                 </p>
                 <button 
-                  onClick={() => router.push(profile.user_type === 'vendor' ? '/vendor/jobs' : '/create-event')}
+                  onClick={() => router.push(profile.user_type === 'vendor' ? '/vendor/jobs' : '/create-gig')}
                   className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
                 >
-                  {profile.user_type === 'vendor' ? 'Browse Jobs' : 'Create Event'}
+                  {profile.user_type === 'vendor' ? 'Browse Jobs' : 'Create Gig'}
                 </button>
               </div>
             </motion.div>
