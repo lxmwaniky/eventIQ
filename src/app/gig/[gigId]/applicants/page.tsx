@@ -110,18 +110,32 @@ const Applicants = () => {
   };
 
   const updateProposalStatus = async (proposalId: string, status: string) => {
-    const { error } = await supabase
+    console.log('Updating proposal:', proposalId, 'to status:', status);
+    
+    const { data, error } = await supabase
       .from('proposals')
-      .update({ status })
-      .eq('id', proposalId);
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', proposalId)
+      .select()
+      .single();
 
     if (error) {
       console.error('Error updating proposal:', error);
+      alert(`Failed to ${status} proposal. Please try again.`);
       return;
     }
 
-    // Refresh proposals
-    await fetchGigAndProposals();
+    console.log('Proposal updated successfully:', data);
+    
+    // Update local state immediately
+    setProposals((current) =>
+      current.map((p) =>
+        p.id === proposalId ? { ...p, status } : p
+      )
+    );
+    
+    // Show success message
+    alert(`Proposal ${status === 'accepted' ? 'accepted' : 'rejected'} successfully!`);
   };
 
   const getStatusColor = (status: string) => {

@@ -52,12 +52,16 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
-    if (profile) {
+    if (profile && proposalId) {
       fetchProposalAndMessages();
       
-      // Subscribe to new messages
+      // Subscribe to new messages with proper realtime config
       const channel = supabase
-        .channel(`proposal_${proposalId}`)
+        .channel(`messages:${proposalId}`, {
+          config: {
+            broadcast: { self: true },
+          },
+        })
         .on(
           'postgres_changes',
           {
@@ -67,13 +71,24 @@ const Chat = () => {
             filter: `proposal_id=eq.${proposalId}`,
           },
           (payload) => {
-            setMessages((current) => [...current, payload.new as Message]);
+            console.log('New message received:', payload);
+            const newMsg = payload.new as Message;
+            setMessages((current) => {
+              // Avoid duplicates
+              if (current.some(m => m.id === newMsg.id)) {
+                return current;
+              }
+              return [...current, newMsg];
+            });
             scrollToBottom();
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          console.log('Subscription status:', status);
+        });
 
       return () => {
+        console.log('Unsubscribing from channel');
         supabase.removeChannel(channel);
       };
     }
@@ -155,24 +170,40 @@ const Chat = () => {
     e.preventDefault();
     if (!newMessage.trim() || sending) return;
 
+    const messageContent = newMessage.trim();
+    setNewMessage(''); // Clear input immediately for better UX
     setSending(true);
+    
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
         .insert({
           proposal_id: proposalId,
           sender_id: profile.id,
-          content: newMessage.trim(),
-        });
+          content: messageContent,
+        })
+        .select()
+        .single();
 
       if (error) {
         console.error('Error sending message:', error);
+        alert('Failed to send message. Please try again.');
+        setNewMessage(messageContent); // Restore message on error
         return;
       }
 
-      setNewMessage('');
+      console.log('Message sent successfully:', data);
+      
+      // Message will be added via realtime subscription
+      // But add it immediately for better UX if realtime is slow
+      if (data && !messages.some(m => m.id === data.id)) {
+        setMessages(current => [...current, data]);
+        scrollToBottom();
+      }
     } catch (error) {
       console.error('Error:', error);
+      alert('Failed to send message. Please try again.');
+      setNewMessage(messageContent);
     } finally {
       setSending(false);
     }

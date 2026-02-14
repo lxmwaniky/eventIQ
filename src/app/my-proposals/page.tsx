@@ -41,6 +41,37 @@ const MyProposals = () => {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    if (vendorId) {
+      // Subscribe to proposal status changes
+      const channel = supabase
+        .channel('vendor_proposals')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'proposals',
+            filter: `vendor_id=eq.${vendorId}`,
+          },
+          (payload) => {
+            console.log('Proposal updated:', payload);
+            // Update the specific proposal in state
+            setProposals((current) =>
+              current.map((p) =>
+                p.id === payload.new.id ? { ...p, status: payload.new.status } : p
+              )
+            );
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [vendorId]);
+
   const checkAuth = async () => {
     try {
       const userProfile = await getCurrentProfile();
@@ -179,7 +210,12 @@ const MyProposals = () => {
                     </div>
                   </div>
 
-                  <div className="ml-4">
+                  <div className="ml-4 flex flex-col gap-2">
+                    {proposal.status === 'accepted' && (
+                      <div className="px-3 py-1 bg-green-50 text-green-700 text-sm font-medium rounded-lg text-center">
+                        ✓ Approved
+                      </div>
+                    )}
                     <button
                       onClick={() => router.push(`/chat/${proposal.id}`)}
                       className="px-4 py-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white font-medium rounded-xl hover:shadow-lg transition-all flex items-center gap-2 whitespace-nowrap"
