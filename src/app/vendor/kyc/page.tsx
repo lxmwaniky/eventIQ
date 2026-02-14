@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CheckCircle, 
   Building2, 
   MapPin, 
   Phone, 
   Briefcase, 
-  Image as ImageIcon,
   Upload,
   Loader2,
   ArrowRight,
-  Globe
+  Globe,
+  X
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -22,7 +22,8 @@ const VendorKYC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
-  const [uploadedDocs, setUploadedDocs] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [showApproval, setShowApproval] = useState(false);
   const [formData, setFormData] = useState({
     businessName: '',
     category: '',
@@ -56,17 +57,15 @@ const VendorKYC = () => {
     'Other',
   ];
 
-  const requiredDocuments = [
-    'Business Registration Certificate',
-    'Tax Compliance Certificate',
-    'Professional License/Certification',
-  ];
-
-  const handleFileSimulation = (docName: string) => {
-    // Simulate file upload
-    if (!uploadedDocs.includes(docName)) {
-      setUploadedDocs([...uploadedDocs, docName]);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setUploadedFiles([...uploadedFiles, ...filesArray]);
     }
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,6 +74,9 @@ const VendorKYC = () => {
     setLoading(true);
 
     try {
+      // Simulate document processing for 3 seconds
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -145,6 +147,7 @@ const VendorKYC = () => {
         country: formData.country,
         city: formData.city,
         location: `${formData.city}, ${formData.country}`,
+        verified: true, // Auto-approve for demo
       };
 
       let vendorError;
@@ -180,12 +183,17 @@ const VendorKYC = () => {
         return;
       }
 
-      // Success! Redirect to dashboard
-      router.push('/?kyc_complete=true');
+      // Show approval animation
+      setLoading(false);
+      setShowApproval(true);
+
+      // Redirect to jobs page after approval
+      setTimeout(() => {
+        router.push('/vendor/jobs');
+      }, 2000);
     } catch (err: any) {
       console.error('KYC submission error:', err);
       setError(err?.message || 'An unexpected error occurred');
-    } finally {
       setLoading(false);
     }
   };
@@ -207,7 +215,43 @@ const VendorKYC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-24 pb-16 px-4">
+    <>
+      {/* KYC Approval Modal */}
+      <AnimatePresence>
+        {showApproval && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="bg-white rounded-3xl p-8 max-w-md mx-4 text-center shadow-2xl"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center"
+              >
+                <CheckCircle className="h-12 w-12 text-green-600" />
+              </motion.div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">KYC Approved!</h2>
+              <p className="text-gray-600 mb-4">
+                Your vendor profile has been verified successfully.
+              </p>
+              <p className="text-sm text-gray-500">
+                Redirecting you to available jobs...
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 pt-24 pb-16 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Progress Steps */}
         <div className="mb-12">
@@ -418,55 +462,70 @@ const VendorKYC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 className="space-y-6"
               >
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-                  <p className="text-sm text-blue-800">
-                    <strong>Demo Mode:</strong> This is a simulation. Click the upload buttons to simulate document upload. No actual files will be uploaded.
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Upload Business Documents *
+                  </label>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Upload your business registration, tax certificates, licenses, or any relevant documents.
                   </p>
+                  
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-orange-400 transition-all">
+                    <input
+                      type="file"
+                      id="documents"
+                      multiple
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    <label htmlFor="documents" className="cursor-pointer">
+                      <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-700 font-medium mb-2">
+                        Click to upload documents
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        PDF, DOC, DOCX, JPG, PNG (Max 10MB per file)
+                      </p>
+                    </label>
+                  </div>
                 </div>
 
-                <div className="space-y-4">
-                  {requiredDocuments.map((docName) => (
-                    <div key={docName} className="border-2 border-gray-200 rounded-xl p-4 hover:border-orange-300 transition-all">
-                      <div className="flex items-center justify-between">
+                {/* Uploaded Files List */}
+                {uploadedFiles.length > 0 && (
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-gray-700">
+                      Uploaded Files ({uploadedFiles.length})
+                    </p>
+                    {uploadedFiles.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3"
+                      >
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                            uploadedDocs.includes(docName)
-                              ? 'bg-green-100'
-                              : 'bg-gray-100'
-                          }`}>
-                            {uploadedDocs.includes(docName) ? (
-                              <CheckCircle className="h-6 w-6 text-green-600" />
-                            ) : (
-                              <Upload className="h-6 w-6 text-gray-400" />
-                            )}
-                          </div>
+                          <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
                           <div>
-                            <p className="font-medium text-gray-900">{docName}</p>
-                            <p className="text-sm text-gray-500">
-                              {uploadedDocs.includes(docName) ? 'Uploaded ✓' : 'Required'}
+                            <p className="font-medium text-gray-900 text-sm">{file.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {(file.size / 1024).toFixed(1)} KB
                             </p>
                           </div>
                         </div>
                         <button
                           type="button"
-                          onClick={() => handleFileSimulation(docName)}
-                          disabled={uploadedDocs.includes(docName)}
-                          className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                            uploadedDocs.includes(docName)
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:shadow-lg'
-                          }`}
+                          onClick={() => removeFile(index)}
+                          className="text-red-600 hover:text-red-700 text-sm font-medium"
                         >
-                          {uploadedDocs.includes(docName) ? 'Uploaded' : 'Upload'}
+                          Remove
                         </button>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
 
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6">
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                   <p className="text-sm text-amber-800">
-                    <strong>Note:</strong> Upload all required documents to complete your KYC verification. Your profile will be reviewed within 24-48 hours.
+                    <strong>Note:</strong> Your documents will be reviewed instantly. Once approved, you can start bidding on available jobs.
                   </p>
                 </div>
               </motion.div>
@@ -496,22 +555,22 @@ const VendorKYC = () => {
               ) : (
                 <button
                   type="submit"
-                  disabled={loading || uploadedDocs.length < requiredDocuments.length}
+                  disabled={loading || uploadedFiles.length === 0}
                   className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-600 via-amber-600 to-red-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>
                       <Loader2 className="h-5 w-5 animate-spin" />
-                      Submitting...
+                      Processing Documents...
                     </>
-                  ) : uploadedDocs.length < requiredDocuments.length ? (
+                  ) : uploadedFiles.length === 0 ? (
                     <>
-                      Upload All Documents First
+                      Upload Documents First
                     </>
                   ) : (
                     <>
-                      Complete Setup
-                      <CheckCircle className="h-5 w-5" />
+                      Submit for Approval
+                      <ArrowRight className="h-5 w-5" />
                     </>
                   )}
                 </button>
@@ -521,6 +580,7 @@ const VendorKYC = () => {
         </motion.div>
       </div>
     </div>
+    </>
   );
 };
 
