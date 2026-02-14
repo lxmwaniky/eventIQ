@@ -41,18 +41,6 @@ const containerVariants = {
   }
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.6,
-      ease: [0.6, 0.01, -0.05, 0.95]
-    }
-  }
-};
-
 const Features = () => {
   return (
     <section className="py-24 bg-gradient-to-br from-orange-50 via-white to-amber-50 relative overflow-hidden">
@@ -110,7 +98,10 @@ const Features = () => {
             return (
               <motion.div
                 key={index}
-                variants={itemVariants}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.15 }}
                 whileHover={{ y: -10, scale: 1.02 }}
                 className="relative group"
               >
