@@ -251,7 +251,7 @@ export default function Home() {
                     <p className="text-sm text-gray-600">
                       {profile.user_type === 'vendor' ? 'Total Revenue' : 'Total Spent'}
                     </p>
-                    <p className="text-2xl font-bold text-gray-900">$0</p>
+                    <p className="text-2xl font-bold text-gray-900">KSH 0</p>
                   </div>
                 </div>
               </motion.div>

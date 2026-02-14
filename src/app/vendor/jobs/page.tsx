@@ -57,7 +57,7 @@ const VendorJobs = () => {
       id: 1,
       title: 'Corporate Conference Catering - 200 Guests',
       description: 'Looking for a professional catering service for our annual corporate conference. We need breakfast, lunch, and coffee breaks for 200 attendees over 2 days.',
-      budget: '$3,000 - $5,000',
+      budget: 'KSH 300,000 - 500,000',
       location: 'Nairobi, Kenya',
       date: 'March 15-16, 2026',
       category: 'catering',
@@ -70,7 +70,7 @@ const VendorJobs = () => {
       id: 2,
       title: 'Wedding Photography & Videography',
       description: 'Seeking an experienced photographer and videographer for a wedding celebration. Must have portfolio of previous wedding work.',
-      budget: '$1,500 - $2,500',
+      budget: 'KSH 150,000 - 250,000',
       location: 'Lagos, Nigeria',
       date: 'April 22, 2026',
       category: 'photography',
@@ -83,7 +83,7 @@ const VendorJobs = () => {
       id: 3,
       title: 'Sound System & DJ for Birthday Party',
       description: 'Need professional sound system setup and DJ services for a 30th birthday celebration. Prefer someone with experience in Afrobeats and contemporary music.',
-      budget: '$800 - $1,200',
+      budget: 'KSH 80,000 - 120,000',
       location: 'Accra, Ghana',
       date: 'March 28, 2026',
       category: 'audio_visual',
@@ -96,7 +96,7 @@ const VendorJobs = () => {
       id: 4,
       title: 'Event Decoration - Corporate Gala',
       description: 'Looking for creative decoration and styling services for an upscale corporate gala dinner. Theme: African Heritage meets Modern Elegance.',
-      budget: '$2,000 - $3,500',
+      budget: 'KSH 200,000 - 350,000',
       location: 'Johannesburg, South Africa',
       date: 'April 5, 2026',
       category: 'decor_styling',
@@ -109,7 +109,7 @@ const VendorJobs = () => {
       id: 5,
       title: 'Live Band for Hotel Grand Opening',
       description: 'Seeking a professional live band for our hotel grand opening event. Must play a mix of jazz, Afrobeat, and contemporary music.',
-      budget: '$1,800 - $2,800',
+      budget: 'KSH 180,000 - 280,000',
       location: 'Kigali, Rwanda',
       date: 'May 10, 2026',
       category: 'entertainment',
@@ -122,7 +122,7 @@ const VendorJobs = () => {
       id: 6,
       title: 'Venue Sourcing for Product Launch',
       description: 'Need help finding and securing a venue for tech product launch. Looking for modern space with good AV capabilities.',
-      budget: '$500 - $1,000',
+      budget: 'KSH 50,000 - 100,000',
       location: 'Nairobi, Kenya',
       date: 'March 30, 2026',
       category: 'venue_sourcing',
@@ -162,9 +162,9 @@ const VendorJobs = () => {
         // Transform database jobs to match our Job interface
         const transformedJobs: Job[] = jobs.map((job) => {
           const budgetRange = job.budget_min && job.budget_max 
-            ? `$${job.budget_min.toLocaleString()} - $${job.budget_max.toLocaleString()}`
+            ? `KSH ${job.budget_min.toLocaleString()} - ${job.budget_max.toLocaleString()}`
             : job.budget_min 
-            ? `From $${job.budget_min.toLocaleString()}`
+            ? `From KSH ${job.budget_min.toLocaleString()}`
             : 'Budget TBD';
           
           const eventDate = job.event_date 
